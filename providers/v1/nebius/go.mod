@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/net v0.58.0
 	golang.org/x/sync v0.22.0
-	google.golang.org/grpc v1.83.2
+	google.golang.org/grpc v1.84.0
 	k8s.io/api v0.36.3
 	k8s.io/apimachinery v0.36.3
 	k8s.io/client-go v0.36.3
@@ -98,7 +98,7 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.3 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
-	software.sslmate.com/src/go-pkcs12 v0.7.0 // indirect
+	software.sslmate.com/src/go-pkcs12 v0.7.2 // indirect
 )
 
 replace (
