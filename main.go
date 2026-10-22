@@ -18,10 +18,25 @@ limitations under the License.
 package main
 
 import (
+	"log/slog"
+	"os"
+
+	"github.com/KimMachineGun/automemlimit/memlimit"
+
 	"github.com/external-secrets/external-secrets/cmd/controller"
 
 	_ "github.com/external-secrets/external-secrets/pkg/register" // Register all providers and generators
 )
+
+// init sets GOMEMLIMIT from the cgroup memory limit, but only when the
+// AUTOMEMLIMIT environment variable is set, so the default behavior is unchanged.
+// AUTOMEMLIMIT takes a ratio in (0.0, 1.0] or "off". An explicit GOMEMLIMIT takes precedence.
+func init() {
+	if _, ok := os.LookupEnv("AUTOMEMLIMIT"); !ok {
+		return
+	}
+	_, _ = memlimit.Set(memlimit.WithLogger(slog.Default()))
+}
 
 func main() {
 	controller.Execute()

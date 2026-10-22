@@ -86,3 +86,33 @@ These messages can be used to build alerting rules on destructive operations. Th
 | `--tls-ciphers`        | string   |                                       | comma separated list of tls ciphers allowed. This does not apply to TLS 1.3 as the ciphers are selected automatically. The order of this list does not give preference to the ciphers, the ordering is done automatically. Full lists of available ciphers can be found at https://pkg.go.dev/crypto/tls#pkg-constants. E.g. 'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256' |
 | `--tls-min-version`    | string   | 1.2                                   | minimum version of TLS supported.                                                                                                                                                                                                                                                                                                                                                                                        |
 | `--enable-http2`       | boolean  | false                                 | If set, HTTP/2 will be enabled for the metrics and webhook servers                                                                                                                                                                                                                                                                                                                                                       |
+
+## Automatic GOMEMLIMIT
+
+All three components can set the Go runtime's soft memory limit (`GOMEMLIMIT`) from the container's cgroup memory limit, using [automemlimit](https://github.com/KimMachineGun/automemlimit). This makes the garbage collector work harder as the process approaches its memory limit, which reduces the risk of the container being OOM-killed.
+
+It is disabled by default. Enable it by setting the `AUTOMEMLIMIT` environment variable:
+
+| `AUTOMEMLIMIT`     | Behavior                                                                     |
+|--------------------|------------------------------------------------------------------------------|
+| unset              | Disabled (default). `GOMEMLIMIT` is not changed.                             |
+| ratio in (0.0,1.0] | `GOMEMLIMIT` is set to this fraction of the cgroup memory limit, e.g. `0.9`. |
+| `off`              | Disabled.                                                                    |
+
+Notes:
+
+- An explicitly set `GOMEMLIMIT` environment variable always takes precedence, and `AUTOMEMLIMIT` is then ignored.
+- If the container has no memory limit, `GOMEMLIMIT` is not changed. Set `resources.limits.memory` for the component.
+- Leave headroom for memory the Go runtime does not account for. `0.9` is a reasonable starting point.
+- On startup, each component logs `GOMEMLIMIT is updated` with the applied limit in bytes.
+
+With the Helm chart, set the variable for each component through `extraEnv`, `webhook.extraEnv` and `certController.extraEnv`:
+
+```yaml
+extraEnv:
+  - name: AUTOMEMLIMIT
+    value: "0.9"
+resources:
+  limits:
+    memory: 256Mi
+```
